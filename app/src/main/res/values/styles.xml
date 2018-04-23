@@ -1,0 +1,11 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#bababa</item> <!--浅蓝色-->
+        <item name="colorPrimaryDark">#bababa</item> <!--深蓝色-->
+        <item name="android:navigationBarColor">#bababa</item>
+    </style>
+
+</resources>

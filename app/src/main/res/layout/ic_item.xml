@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ic_cl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="gone"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/p"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="P1:"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/item_ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/p"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/et1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="1dp"
+            android:digits="1234567890ABCDFabcdf"
+            android:hint="——"
+            android:inputType="textAutoComplete"
+            android:maxLength="2"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+        <EditText xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/et2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="1dp"
+            android:digits="1234567890ABCDFabcdf"
+            android:hint="——"
+            android:inputType="textAutoComplete|number"
+            android:maxLength="2"
+            android:maxLines="1"
+            android:visibility="gone" />
+        <EditText android:layout_marginRight="1dp"
+            android:id="@+id/et3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="——"
+            android:inputType="textAutoComplete"
+            android:digits="1234567890ABCDFabcdf"
+            android:maxLines="1"
+            android:maxLength="2"
+            android:visibility="gone"
+            xmlns:android="http://schemas.android.com/apk/res/android" />
+        <EditText android:layout_marginRight="1dp"
+            android:id="@+id/et4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="——"
+            android:inputType="textAutoComplete"
+            android:visibility="gone"
+            android:digits="1234567890ABCDFabcdf"
+            android:maxLines="1"
+            android:maxLength="2"
+            xmlns:android="http://schemas.android.com/apk/res/android" />
+        <EditText android:layout_marginRight="1dp"
+            android:id="@+id/et5"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="——"
+            android:inputType="textAutoComplete"
+            android:digits="1234567890ABCDFabcdf"
+            android:maxLines="1"
+            android:maxLength="2"
+            xmlns:android="http://schemas.android.com/apk/res/android" />
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/button5"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button5"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:text="W"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

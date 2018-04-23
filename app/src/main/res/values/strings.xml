@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MagicStick</string>
+    <string name="blueTooth_title">蓝牙连接</string>
+    <string name="blueTooth_name">蓝牙名称：</string>
+    <string name="blueTooth_ressi">信号：</string>
+    <string name="showMore">显示更多</string>
+    <string name="packUp">收起</string>
+
+</resources>
