@@ -13,8 +13,11 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.user.magicstick.dataprocessor.BackData;
+import com.example.user.magicstick.dataprocessor.CRC8CCIIT;
 import com.example.user.magicstick.dataprocessor.DataProcessor;
 import com.example.user.magicstick.R;
 import com.example.user.magicstick.ble.BtService;
@@ -24,7 +27,7 @@ import com.example.user.magicstick.ble.BtService;
  * Created by user on 2018/4/16.
  */
 
-public class MagicStickActivity extends AppCompatActivity {
+public class MagicStickActivity extends AppCompatActivity implements View.OnClickListener {
 
     private String TAG = MainActivity.class.getSimpleName();
 
@@ -35,6 +38,7 @@ public class MagicStickActivity extends AppCompatActivity {
 
     private Toolbar mToolbar;
     private DataProcessor mProcessor;
+    private Button mRButton, mSButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,6 +62,10 @@ public class MagicStickActivity extends AppCompatActivity {
                 finish();
             }
         });
+        mRButton = findViewById(R.id.button);
+        mSButton = findViewById(R.id.button2);
+        mRButton.setOnClickListener(this);
+        mSButton.setOnClickListener(this);
     }
 
 
@@ -77,14 +85,21 @@ public class MagicStickActivity extends AppCompatActivity {
         registerReceiver(myBr, intentFilter);
     }
 
+    @Override
     public void onClick(View v) {
-        Intent intent = new Intent(this,ReadActivity.class);
-        startActivity(intent);
-//        byte[] bytes = new byte[40];
-//        for (int i = 0 ;i<40;i++){
-//            bytes[i]= 1;
-//        }
-//        mProcessor.Write((byte) 0, bytes );
+        switch (v.getId()) {
+            case R.id.button:
+                Intent intent = new Intent(this, ReadActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.button2:
+                byte[] bytes = new byte[30];
+                for (int i = 0; i < 30; i++) {
+                    bytes[i] = (byte) i;
+                }
+                mProcessor.Write((byte) 1, bytes);
+                break;
+        }
     }
 
     private class MyConn implements ServiceConnection {
@@ -130,14 +145,21 @@ public class MagicStickActivity extends AppCompatActivity {
             String action = intent.getAction();
             //接收数据
             if (action.equals(BtService.ACTION_DATA_AVAILABLE)) {
-                byte[] bytes = intent.getByteArrayExtra("data");
-                StringBuffer stringBuffer = new StringBuffer();
+                //获取crc验证后的数据
+                BackData backData = new BackData(intent.getByteArrayExtra("data"));
+                if (!backData.Processor()) {
+                    for (int e : backData.getErrorList()) {
+                        byte[] bytes = mProcessor.getFrame().get(e);
+                        StringBuffer stringBuffer = new StringBuffer();
+                        for (byte b : bytes
+                                ) {
+                            stringBuffer.append(Integer.toHexString(b&0xff));
+                        }
+                        System.out.println(stringBuffer.toString());
+                    }
 
-                for (byte b : bytes
-                        ) {
-                    stringBuffer.append(Integer.toBinaryString(b) + ",");
                 }
-                System.out.println(stringBuffer.toString());
+
             }
         }
     }

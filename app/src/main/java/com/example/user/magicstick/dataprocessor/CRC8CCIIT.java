@@ -8,7 +8,7 @@ public class CRC8CCIIT {
     private final byte[] mResult;
     private int crc;
 
-    CRC8CCIIT(byte[] b) {
+    public CRC8CCIIT(byte[] b) {
         this.crc = 0x0;
         mResult = new byte[b.length + 1];
         int j = 0;

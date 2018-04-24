@@ -2,23 +2,21 @@ package com.example.user.magicstick.dataprocessor;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.user.magicstick.ble.BtService;
 
-import java.lang.reflect.Type;
-import java.util.concurrent.SynchronousQueue;
+import java.util.ArrayList;
 
 /**
  * Created by user on 2018/4/19.
  */
 
 public class DataProcessor {
-    byte mType;
-    int mNo;
-    byte[] mData;
-    BtService mBtService;
+    private byte mType;
+    private int mNo;
+    private byte[] mData;
+    private BtService mBtService;
+    private ArrayList<byte[]> frameList = new ArrayList<>();
 
     public DataProcessor(BtService mBtService) {
 
@@ -29,18 +27,19 @@ public class DataProcessor {
         byte[] f = new byte[19];
         byte[] data = mData;
         f[0] = (byte) (mNo | mType << 6);
-
         System.arraycopy(data, 0, f, 18 - (data.length - 1), data.length);
         CRC8CCIIT crc8CCIIT = new CRC8CCIIT(f);
-
         return crc8CCIIT.getResult();
+    }
+    public ArrayList<byte[]> getFrame(){
+        return frameList;
     }
 
     public void Write(byte type, byte data[]) {
 
         mType = type;
         mData = data;
-
+        frameList.clear();
         for (BluetoothGattService bg : mBtService.getSupportedGattServices()) {
             if (bg.getUuid().toString().equals("0000ffe5-0000-1000-8000-00805f9b34fb")) {
                 for (BluetoothGattCharacteristic bc : bg.getCharacteristics()
@@ -50,8 +49,9 @@ public class DataProcessor {
                         final int charaProp = characteristic.getProperties();
                         //如果该char可写
                         if ((charaProp | BluetoothGattCharacteristic.PERMISSION_WRITE) > 0) {
-                            if (mData.length < 18 && type == 0) {
-                                characteristic.setValue(frame((byte) 3, 0, mData));
+                            if (mData.length <= 18 && type == 0) {
+                                frameList.add(frame((byte) 3, 0, mData));
+                                characteristic.setValue(frameList.get(0));
                                 synchronized (this) {
                                     mBtService.writeCharacteristic(characteristic);
                                 }
@@ -68,6 +68,7 @@ public class DataProcessor {
     }
 
     private void Writes(final BluetoothGattCharacteristic characteristic) {
+
         new Thread() {
             @Override
             public void run() {
@@ -88,8 +89,8 @@ public class DataProcessor {
                         bytes = new byte[18];
                         System.arraycopy(mData, (i * 18), bytes, 0, 18);
                     }
-
-                    characteristic.setValue(frame(mType, i, bytes));
+                    frameList.add(frame(mType, i, bytes));
+                    characteristic.setValue(frameList.get(i));
                     synchronized (this) {
                         mBtService.writeCharacteristic(characteristic);
                     }
