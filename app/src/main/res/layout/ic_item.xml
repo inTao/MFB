@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/ic_cl"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="gone"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <TextView
@@ -78,7 +77,6 @@
             xmlns:android="http://schemas.android.com/apk/res/android" />
         <EditText android:layout_marginRight="1dp"
             android:id="@+id/et5"
-            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="——"
@@ -86,7 +84,14 @@
             android:digits="1234567890ABCDFabcdf"
             android:maxLines="1"
             android:maxLength="2"
+            android:visibility="gone"
             xmlns:android="http://schemas.android.com/apk/res/android" />
+        <Spinner
+            android:id="@+id/pSp"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </Spinner>
     </LinearLayout>
 
     <CheckBox
@@ -97,11 +102,11 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button5"
+        app:layout_constraintEnd_toStartOf="@+id/wBt"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button5"
+        android:id="@+id/wBt"
         style="@style/Widget.AppCompat.Button.Small"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

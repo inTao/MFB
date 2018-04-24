@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
+
 import com.example.user.magicstick.dataprocessor.DataProcessor;
 import com.example.user.magicstick.R;
 import com.example.user.magicstick.ble.BtService;
@@ -79,6 +80,11 @@ public class MagicStickActivity extends AppCompatActivity {
     public void onClick(View v) {
         Intent intent = new Intent(this,ReadActivity.class);
         startActivity(intent);
+//        byte[] bytes = new byte[40];
+//        for (int i = 0 ;i<40;i++){
+//            bytes[i]= 1;
+//        }
+//        mProcessor.Write((byte) 0, bytes );
     }
 
     private class MyConn implements ServiceConnection {
@@ -88,7 +94,6 @@ public class MagicStickActivity extends AppCompatActivity {
             mProcessor = new DataProcessor(mBtService);
             String s = mBtService.getBtDevice();
             mToolbar.setTitle("名称： " + s);
-            //mProcessor.Write((byte) 3,0,new byte[]{0x01});
             Toast.makeText(MagicStickActivity.this, s, Toast.LENGTH_SHORT).show();
         }
 

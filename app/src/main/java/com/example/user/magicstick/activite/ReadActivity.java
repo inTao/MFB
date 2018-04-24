@@ -1,6 +1,7 @@
 package com.example.user.magicstick.activite;
 
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -8,13 +9,18 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ReplacementTransformationMethod;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.user.magicstick.R;
+
+import java.util.ArrayList;
 
 /**
  * Created by user on 2018/4/23.
@@ -27,8 +33,11 @@ public class ReadActivity extends AppCompatActivity {
     private Button mButton;
     private LinearLayout readLL;
     private int sum;
-    private TextView mPView;
     private LinearLayout readLL2;
+    private View mItemV;
+    private ArrayList<String[]> mPDateList = new ArrayList<>();
+    private String[] mPData;
+    private boolean isP1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,60 +51,91 @@ public class ReadActivity extends AppCompatActivity {
                 finish();
             }
         });
+
         sum = 30;
+        isP1 = true;
+        mPData = new String[]{"00", "00", "00", "00", "00"};
+        //初始化view
         initView();
     }
 
+    //初始化view方法
     private void initView() {
-        readLL = findViewById(R.id.read_ll);
-        readLL2 = findViewById(R.id.read_ll2);
+        //获得俩个装P的布局
+        readLL = findViewById(R.id.read_ll);//放 P1~P4  P30
+        readLL2 = findViewById(R.id.read_ll2);//放 P5~p29
+        //更具sum加载p的数目
         for (int i = 0; i < sum; i++) {
-            //EditText et = ((View.inflate(this, R.layout.ic_item, null)).findViewById(R.id.et));
-            View mItemV = View.inflate(this, R.layout.ic_item, null);
-            ConstraintLayout constraintLayout = mItemV.findViewById(R.id.ic_cl);
-            mPView = mItemV.findViewById(R.id.p);
-            mPView.setText("P" + (i + 1) + " :");
-            constraintLayout.setVisibility(View.VISIBLE);
+            mPDateList.add(mPData);
+            //获取p的item
+            mItemV = View.inflate(this, R.layout.ic_item, null);
+            //获取P的textView
+            TextView pView = mItemV.findViewById(R.id.p);
+            pView.setText("P" + (i + 1) + " :");
+            Button wBt = mItemV.findViewById(R.id.wBt);
+            wBt.setTag(i);
+            wBt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    StringBuffer stringBuffer = new StringBuffer();
+                    int i = (int) v.getTag();
+                    for (String s:
+                    mPDateList.get(i) ) {
+                        System.out.println(s);
+                    }
+
+                }
+            });
+
+            //p1~4 一定会有 所以加到布局1 显示 当有 30时 也要显示 其它的放在布局2中
             if (i < 4 || i == 29)
                 readLL.addView(mItemV);
             else
                 readLL2.addView(mItemV);
 
+            //如果sum>3时 需要“显示更多”的按钮
             if (sum > 3 && i == 3) {
                 mButton = findViewById(R.id.showMore);
                 mButton.setVisibility(View.VISIBLE);
             }
+            //不同的p有不同的edittext个数
             switch (i) {
                 case 0:
-                case 1:
-                    EditText text1 = mItemV.findViewById(ETID[ETID.length - 1]);
-                    setEditText(text1, mItemV);
+                    if (isP1){
+                        Spinner spinner = mItemV.findViewById(R.id.pSp);
+                        spinner.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,new String[]{"11","21","31","41"}));
+                        spinner.setVisibility(View.VISIBLE);
+                    }
+                    break;
+                case 1://p1、p2 有1个edittext p3有4个 p5 有5个 p30有2个 其它都为5个
+                    EditText text1 = mItemV.findViewById(ETID[0]);
+                    //设置editText
+                    setEditText(text1, mItemV, i);
                     break;
                 case 2:
                 case 3:
-                    for (int j = ETID.length - 1; j > ETID.length - i - 3; j--) {
+                    for (int j = 0; j < ETID.length - (3 - i); j++) {
                         EditText text = mItemV.findViewById(ETID[j]);
-                        setEditText(text, mItemV);
+                        setEditText(text, mItemV, i);
                     }
                     break;
                 case 29:
-                    mPView.setText("P" + 30 + " :");
-                    for (int j = ETID.length - 1; j > ETID.length - 3; j--) {
+                    for (int j = 0; j < 2; j++) {
                         EditText text2 = mItemV.findViewById(ETID[j]);
-                        setEditText(text2, mItemV);
+                        setEditText(text2, mItemV, i);
                     }
                     break;
                 default:
                     for (int j = 0; j < ETID.length; j++) {
                         EditText text3 = mItemV.findViewById(ETID[j]);
-                        setEditText(text3, mItemV);
+                        setEditText(text3, mItemV, i);
                     }
                     break;
             }
 
         }
 
-
+//设置显示更多的点击事件
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,8 +152,8 @@ public class ReadActivity extends AppCompatActivity {
 
     }
 
-    private void setEditText(final EditText editText, final View itemV) {
-        boolean isfrist = false;
+    //设置editText
+    private void setEditText(final EditText editText, final View itemV, final int p) {
         int i = 0;
         switch (editText.getId()) {
             case R.id.et2:
@@ -132,6 +172,8 @@ public class ReadActivity extends AppCompatActivity {
         editText.setVisibility(View.VISIBLE);
         editText.setTransformationMethod(new AutoCaseTransformationMethod());
         final int finalI = i;
+
+        //文字改变监听
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -140,35 +182,48 @@ public class ReadActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                System.out.println("CharSequence" + s.toString() + "start:" + start);
+                //如果输入满后 跳到下一个editText
+                if ((s.toString().trim().replaceAll("\\s*", "")).toCharArray().length == 2) {
+                    mPDateList.get(p)[finalI] = (s.toString()).toUpperCase();
+                    if (start != 0) {
+                        if (finalI < 4) {
+                            EditText editText1 = itemV.findViewById(ETID[finalI + 1]);
+                            editText1.requestFocus();
+                            editText1.setSelection(editText1.getText().length());
+                        } else
+                            return;
+                    }
+                    //如果删除没后  跳到上一个
+                } else if (editText.getText().toString().trim().equals("")) {
 
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if ((editText.getText().toString().trim().replaceAll("\\s*", "")).toCharArray().length == 2) {
-                    System.out.println(finalI);
-                    if (finalI <4){
-                        EditText editText1 = itemV.findViewById(ETID[finalI +1]);
-                        editText1.requestFocus();
-                        editText1.setSelection(editText1.getText().length());
-                    }else
-                        return;
-                }else if (editText.getText().equals("")){
-
-                }
-            }
-        });
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    String str = editText.getText().toString().trim();
-                    if (str.toCharArray().length == 1) {
-                        editText.setText("0" + str);
+                    if (finalI != 0) {
+                        EditText editText2 = itemV.findViewById(ETID[finalI - 1]);
+                        editText2.requestFocus();
+                        editText2.setSelection(editText2.getText().length());
                     }
                 }
             }
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
         });
+
+        //失去焦点监听
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                String str = ((EditText) v).getText().toString().trim();
+                if (!hasFocus) {
+                    if (str.toCharArray().length == 1) {
+                        ((EditText) v).setText("0" + str);
+                    }
+                    mPDateList.get(p)[finalI] = ((EditText) v).getText().toString();
+                }
+            }
+        });
+
     }
 
     public class AutoCaseTransformationMethod extends ReplacementTransformationMethod {
