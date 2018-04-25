@@ -47,9 +47,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="1dp"
+            android:inputType="textAutoComplete"
             android:digits="1234567890ABCDFabcdf"
             android:hint="——"
-            android:inputType="textAutoComplete|number"
             android:maxLength="2"
             android:maxLines="1"
             android:visibility="gone" />

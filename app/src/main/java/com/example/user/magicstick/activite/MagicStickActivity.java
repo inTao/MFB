@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.magicstick.dataprocessor.BackData;
@@ -21,6 +22,9 @@ import com.example.user.magicstick.dataprocessor.CRC8CCIIT;
 import com.example.user.magicstick.dataprocessor.DataProcessor;
 import com.example.user.magicstick.R;
 import com.example.user.magicstick.ble.BtService;
+
+import java.util.ArrayList;
+import java.util.zip.CRC32;
 
 
 /**
@@ -97,7 +101,7 @@ public class MagicStickActivity extends AppCompatActivity implements View.OnClic
                 for (int i = 0; i < 30; i++) {
                     bytes[i] = (byte) i;
                 }
-                mProcessor.Write((byte) 1, bytes);
+                mProcessor.Write((byte) 0, bytes);
                 break;
         }
     }
@@ -125,7 +129,6 @@ public class MagicStickActivity extends AppCompatActivity implements View.OnClic
         unbindService(myConn);
         unregisterReceiver(myBr);
         mBtService = null;
-        System.out.println("我消失了了");
     }
 
     @Override
@@ -135,7 +138,6 @@ public class MagicStickActivity extends AppCompatActivity implements View.OnClic
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
-
         }
     }
 
@@ -146,17 +148,37 @@ public class MagicStickActivity extends AppCompatActivity implements View.OnClic
             //接收数据
             if (action.equals(BtService.ACTION_DATA_AVAILABLE)) {
                 //获取crc验证后的数据
-                BackData backData = new BackData(intent.getByteArrayExtra("data"));
-                if (!backData.Processor()) {
+                final BackData backData = new BackData(intent.getByteArrayExtra("data"));
+                StringBuffer stringBuffer1 = new StringBuffer();
+                for (byte c : intent.getByteArrayExtra("data")) {
+                    stringBuffer1.append(Integer.toHexString(c&0xff) + ",");
+                }
+                TextView textView = findViewById(R.id.textView3);
+                textView.append(stringBuffer1.toString()+"\n");
+                if (backData.Processor()==backData.ACK_HASERROR) {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            super.run();
                     for (int e : backData.getErrorList()) {
-                        byte[] bytes = mProcessor.getFrame().get(e);
+                        byte[] bytes = new byte[19];
+                        System.arraycopy((mProcessor.getFrame().get(e)), 0, bytes, 0, 19);
+                        bytes[0] = (byte) ((bytes[0] & 0x3f) | 0x80);
+                        CRC8CCIIT crc8CCIIT = new CRC8CCIIT(bytes);
+                        mProcessor.Write((byte) 2, crc8CCIIT.getResult());
                         StringBuffer stringBuffer = new StringBuffer();
                         for (byte b : bytes
                                 ) {
-                            stringBuffer.append(Integer.toHexString(b&0xff));
+                            stringBuffer.append(Integer.toHexString(b & 0xff));
                         }
                         System.out.println(stringBuffer.toString());
                     }
+                        }
+                    }.start();
+
+                }else if (backData.Processor()==backData.RXD_SUCCEED){
+
+
 
                 }
 

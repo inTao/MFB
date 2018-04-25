@@ -11,6 +11,7 @@ import android.text.TextWatcher;
 import android.text.method.ReplacementTransformationMethod;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,8 +54,8 @@ public class ReadActivity extends AppCompatActivity {
         });
 
         sum = 30;
-        isP1 = true;
-        mPData = new String[]{"00", "00", "00", "00", "00"};
+        isP1 = false;
+
         //初始化view
         initView();
     }
@@ -66,6 +67,7 @@ public class ReadActivity extends AppCompatActivity {
         readLL2 = findViewById(R.id.read_ll2);//放 P5~p29
         //更具sum加载p的数目
         for (int i = 0; i < sum; i++) {
+            mPData = new String[]{"00", "00", "00", "00", "00"};
             mPDateList.add(mPData);
             //获取p的item
             mItemV = View.inflate(this, R.layout.ic_item, null);
@@ -81,7 +83,7 @@ public class ReadActivity extends AppCompatActivity {
                     int i = (int) v.getTag();
                     for (String s:
                     mPDateList.get(i) ) {
-                        System.out.println(s);
+                        System.out.println("size"+ mPDateList.get(i).length+s);
                     }
 
                 }
@@ -104,9 +106,22 @@ public class ReadActivity extends AppCompatActivity {
                     if (isP1){
                         Spinner spinner = mItemV.findViewById(R.id.pSp);
                         spinner.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,new String[]{"11","21","31","41"}));
+                        final int finalI = i;
+                        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                mPDateList.get(finalI)[0]=((TextView)view).getText().toString();
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+
+                            }
+                        });
                         spinner.setVisibility(View.VISIBLE);
+                        break;
                     }
-                    break;
+
                 case 1://p1、p2 有1个edittext p3有4个 p5 有5个 p30有2个 其它都为5个
                     EditText text1 = mItemV.findViewById(ETID[0]);
                     //设置editText
@@ -182,10 +197,9 @@ public class ReadActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                System.out.println("CharSequence" + s.toString() + "start:" + start);
                 //如果输入满后 跳到下一个editText
                 if ((s.toString().trim().replaceAll("\\s*", "")).toCharArray().length == 2) {
-                    mPDateList.get(p)[finalI] = (s.toString()).toUpperCase();
+                    mPDateList.get(p)[finalI] = s.toString();
                     if (start != 0) {
                         if (finalI < 4) {
                             EditText editText1 = itemV.findViewById(ETID[finalI + 1]);
@@ -219,7 +233,11 @@ public class ReadActivity extends AppCompatActivity {
                     if (str.toCharArray().length == 1) {
                         ((EditText) v).setText("0" + str);
                     }
-                    mPDateList.get(p)[finalI] = ((EditText) v).getText().toString();
+                    str=((EditText) v).getText().toString();
+                    if (str.equals("")){
+                        str = "00";
+                    }
+                    mPDateList.get(p)[finalI] = str;
                 }
             }
         });

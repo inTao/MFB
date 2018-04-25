@@ -27,11 +27,12 @@ public class DataProcessor {
         byte[] f = new byte[19];
         byte[] data = mData;
         f[0] = (byte) (mNo | mType << 6);
-        System.arraycopy(data, 0, f, 18 - (data.length - 1), data.length);
+        System.arraycopy(data, 0, f, 1, data.length);
         CRC8CCIIT crc8CCIIT = new CRC8CCIIT(f);
         return crc8CCIIT.getResult();
     }
-    public ArrayList<byte[]> getFrame(){
+
+    public ArrayList<byte[]> getFrame() {
         return frameList;
     }
 
@@ -39,27 +40,40 @@ public class DataProcessor {
 
         mType = type;
         mData = data;
-        frameList.clear();
+
         for (BluetoothGattService bg : mBtService.getSupportedGattServices()) {
             if (bg.getUuid().toString().equals("0000ffe5-0000-1000-8000-00805f9b34fb")) {
                 for (BluetoothGattCharacteristic bc : bg.getCharacteristics()
                         ) {
                     if ((bc.getUuid().toString()).equals("0000ffe9-0000-1000-8000-00805f9b34fb")) {
-                        BluetoothGattCharacteristic characteristic = bc;
+                        final BluetoothGattCharacteristic characteristic = bc;
                         final int charaProp = characteristic.getProperties();
                         //如果该char可写
                         if ((charaProp | BluetoothGattCharacteristic.PERMISSION_WRITE) > 0) {
-                            if (mData.length <= 18 && type == 0) {
+                            if (mData.length <= 18 && mType == 0) {
+                                frameList.clear();
                                 frameList.add(frame((byte) 3, 0, mData));
                                 characteristic.setValue(frameList.get(0));
                                 synchronized (this) {
                                     mBtService.writeCharacteristic(characteristic);
                                 }
-                            } else {
+                            } else if (mData.length > 18 && mType == 0) {
+                                frameList.clear();
                                 Writes(characteristic);
+                            } else if (mType == 2) {
+
+                                characteristic.setValue(mData);
+                                try {
+                                    Thread.sleep(40);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                synchronized (this) {
+                                    mBtService.writeCharacteristic(characteristic);
+                                }
+
+
                             }
-
-
                         }
                     }
                 }
@@ -67,7 +81,8 @@ public class DataProcessor {
         }
     }
 
-    private void Writes(final BluetoothGattCharacteristic characteristic) {
+
+    private void  Writes(final BluetoothGattCharacteristic characteristic) {
 
         new Thread() {
             @Override
@@ -93,15 +108,17 @@ public class DataProcessor {
                     characteristic.setValue(frameList.get(i));
                     synchronized (this) {
                         mBtService.writeCharacteristic(characteristic);
+                        try {
+                            Thread.sleep(35);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    try {
-                        Thread.sleep(45);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
 
+                }
             }
         }.start();
+
+
     }
 }
