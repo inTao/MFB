@@ -31,9 +31,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyHolder> {
     }
     @Override
     public MyHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        MyHolder myHolder = new MyHolder(
-                LayoutInflater.from(mContext).inflate(R.layout.deviceitem, parent, false));
-        return myHolder;
+            MyHolder myHolder = new MyHolder(
+                    LayoutInflater.from(mContext).inflate(R.layout.deviceitem, parent, false));
+            return myHolder;
+
     }
 
     public void setOnItemClick(OnItemClickLitener onItemClickLitener){

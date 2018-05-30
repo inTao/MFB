@@ -84,9 +84,7 @@ public class MFBApp extends Application {
                     unbindService(myConn);
                     isBind = false;
                 }
-
             }
-
         }
 
         @Override

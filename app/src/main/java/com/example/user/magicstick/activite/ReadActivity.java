@@ -1,5 +1,6 @@
 package com.example.user.magicstick.activite;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
@@ -8,12 +9,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.text.method.ReplacementTransformationMethod;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -21,6 +25,7 @@ import android.widget.TextView;
 
 import com.example.user.magicstick.R;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
@@ -39,6 +44,7 @@ public class ReadActivity extends AppCompatActivity {
     private ArrayList<String[]> mPDateList = new ArrayList<>();
     private String[] mPData;
     private boolean isP1;
+    private int type;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,16 +61,58 @@ public class ReadActivity extends AppCompatActivity {
 
         sum = 30;
         isP1 = false;
-
+        type = 46;
+        toolbar.setTitle("TYPE:"+type);
+        //获得俩个装P的布局
+        readLL = findViewById(R.id.read_ll);//放 P1~P4  P30
+        readLL2 = findViewById(R.id.read_ll2);//放 P5~p29
         //初始化view
-        initView();
+        switch (type){
+            case 70:
+                initView();
+                break;
+            case 46:
+                initView2();
+        }
+    }
+
+    private void initView2() {
+        LinearLayout mPWLL = findViewById(R.id.password_ll);
+        mPWLL.setVisibility(View.VISIBLE);
+        for (int i = 0; i<8;i++){
+            mPData = new String[]{"00", "00", "00", "00", "00"};
+            mPDateList.add(mPData);
+            mItemV = View.inflate(this, R.layout.ic_item, null);
+            readLL.addView(mItemV);
+            TextView pTv = mItemV.findViewById(R.id.p);
+            pTv.setText("P"+i+":");
+            for (int id:ETID
+                 ) {
+                EditText text = mItemV.findViewById(id);
+                setEditText(text,mItemV,i);
+            }
+            CheckBox checkBox = mItemV.findViewById(R.id.checkBox);
+            checkBox.setVisibility(View.GONE);
+            Button bt=mItemV.findViewById(R.id.wBt);
+            bt.setTag(i);
+            bt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    StringBuffer stringBuffer = new StringBuffer();
+                    int i = (int) v.getTag();
+                    for (String s:
+                            mPDateList.get(i) ) {
+                       stringBuffer.append(s);
+                    }
+                    System.out.println("size"+ mPDateList.get(i).length+","+stringBuffer.toString());
+                }
+            });
+        }
     }
 
     //初始化view方法
     private void initView() {
-        //获得俩个装P的布局
-        readLL = findViewById(R.id.read_ll);//放 P1~P4  P30
-        readLL2 = findViewById(R.id.read_ll2);//放 P5~p29
+
         //更具sum加载p的数目
         for (int i = 0; i < sum; i++) {
             mPData = new String[]{"00", "00", "00", "00", "00"};
@@ -192,13 +240,13 @@ public class ReadActivity extends AppCompatActivity {
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                System.out.println("aaa");
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 //如果输入满后 跳到下一个editText
-                if ((s.toString().trim().replaceAll("\\s*", "")).toCharArray().length == 2) {
+                if ((s.toString().trim().toCharArray()).length == 2) {
                     mPDateList.get(p)[finalI] = s.toString();
                     if (start != 0) {
                         if (finalI < 4) {
@@ -209,7 +257,7 @@ public class ReadActivity extends AppCompatActivity {
                             return;
                     }
                     //如果删除没后  跳到上一个
-                } else if (editText.getText().toString().trim().equals("")) {
+                } else if (s.toString().trim().equals("")) {
 
                     if (finalI != 0) {
                         EditText editText2 = itemV.findViewById(ETID[finalI - 1]);
@@ -217,6 +265,7 @@ public class ReadActivity extends AppCompatActivity {
                         editText2.setSelection(editText2.getText().length());
                     }
                 }
+
             }
             @Override
             public void afterTextChanged(Editable s) {

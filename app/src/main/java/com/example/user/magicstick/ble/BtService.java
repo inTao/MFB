@@ -1,6 +1,7 @@
 package com.example.user.magicstick.ble;
 
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -9,6 +10,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.companion.BluetoothDeviceFilter;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Build;
@@ -19,6 +21,7 @@ import android.util.Log;
 import com.example.user.magicstick.activite.MagicStickActivity;
 import com.example.user.magicstick.sharedpreferences.PropertiesUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +51,10 @@ public class BtService extends Service {
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
 
+
+    private int no;
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -63,8 +69,9 @@ public class BtService extends Service {
                 startActivity(mIntent);
                 mBluetoothGatt.discoverServices();
                 PropertiesUtil propertiesUtil = PropertiesUtil.getInstance();
-                propertiesUtil.setValue("BlueAddress",mDevice.getAddress());
+                propertiesUtil.setValue("BlueAddress", mDevice.getAddress());
                 gatt.readRemoteRssi();
+
                 //断开
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
@@ -123,16 +130,31 @@ public class BtService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+
+            if (characteristic.getValue().length > 10) {
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            }
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+
             Log.d(TAG, String.valueOf(status));
+            if (status == 1 && fram != null || fram.size() > 1 && no < fram.size()) {
+                characteristic.setValue(fram.get(no));
+                mBluetoothGatt.writeCharacteristic(characteristic);
+                no++;
+                System.out.println((System.nanoTime() - startTime));
+            }
         }
     };
+
     private Intent mIntent;
     private BluetoothDevice mDevice;
+    private ArrayList<byte[]> fram;
+    private BluetoothGattCharacteristic characteristic;
+    private long startTime;
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
@@ -141,11 +163,16 @@ public class BtService extends Service {
     }
 
     //有数据接收
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
 
         final Intent intent = new Intent(action);
+        StringBuffer stringBuffer = new StringBuffer();
+        for (byte b : characteristic.getValue()
+                ) {
+            stringBuffer.append(Integer.toHexString(b));
+        }
+        System.out.println(stringBuffer.toString());
         intent.putExtra("data", characteristic.getValue());
         sendBroadcast(intent);
     }
@@ -246,12 +273,27 @@ public class BtService extends Service {
         mBluetoothGatt.readCharacteristic(characteristic);
     }
 
-    public void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
+    public void writeCharacteristic(BluetoothGattCharacteristic characteristic, ArrayList<byte[]> fram) {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
             Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
-        mBluetoothGatt.writeCharacteristic(characteristic);
+
+        System.out.println(startTime = System.nanoTime());
+        no = 1;
+        this.fram = fram;
+        this.characteristic = characteristic;
+        for (byte[] b : fram
+                ) {
+            StringBuffer stringBuffer = new StringBuffer();
+            for (byte c : b
+                    ) {
+                stringBuffer.append(Integer.toHexString(c&0xff));
+                stringBuffer.append(",");
+            }
+            System.out.println("aaaaa---------->"+stringBuffer.toString());
+        }
+        System.out.println(mBluetoothGatt.writeCharacteristic(characteristic));
     }
 
     /**

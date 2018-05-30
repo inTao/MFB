@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.user.magicstick.LinearLayout;
 import com.example.user.magicstick.MyAdapter;
 import com.example.user.magicstick.ble.BtService;
 import com.example.user.magicstick.R;
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
             "android.permission.ACCESS_COARSE_LOCATION"};
     private static ArrayList<String> permission_denied = new ArrayList<>();
 
+    private boolean isUnService;
 
     private Toolbar mToolbar;
     private BluetoothAdapter mBluetoothAdapter;
@@ -69,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private MyAdapter myAdapter;
     private Handler mHandler;
+    private TimerTask mTimerTask;
+    private Timer mTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         mHandler = new Handler();
         //view初始化
         viewInit();
+        isUnService = false;
         //蓝牙适配器 初始化
         blueToothInit();
         intent = new IntentFilter(mBtService.ACTION_GATT_CONNECTED);
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         for (int grant : grantResults) {
             if (grant != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this,"aaaa",Toast.LENGTH_SHORT);
+                Toast.makeText(this, "aaaa", Toast.LENGTH_SHORT);
             }
         }
     }
@@ -118,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() == mBtService.ACTION_GATT_CONNECTED) {
+                mDeviceList.clear();
+                mTimer.cancel();
+                mTimer = null;
+                mTimerTask.cancel();
+                mTimerTask = null;
                 finish();
             }
         }
@@ -226,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        LinearLayout layoutManager = new LinearLayout(this);
         mRecyclerView = findViewById(R.id.rcv);
         mRecyclerView.setLayoutManager(layoutManager);
         myAdapter = new MyAdapter(getApplicationContext(), mDeviceList);
@@ -241,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
                 mBtService.connect(mDeviceList.get(position).device.getAddress());
             }
         });
-        TimerTask timerTask = new TimerTask() {
+        mTimerTask = new TimerTask() {
             @Override
             public void run() {
                 MainActivity.this.runOnUiThread(new Runnable() {
@@ -252,8 +262,8 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         };
-        Timer timer = new Timer(true);
-        timer.schedule(timerTask,3000,3000);
+        mTimer = new Timer(true);
+        mTimer.schedule(mTimerTask, 3000, 3000);
     }
 
     //改变蓝牙开关图标
@@ -298,19 +308,17 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mBtService = null;
+
         }
     }
 
-    //activity 关闭
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mBluetoothAdapter.stopLeScan(mLeScanCallback);
         unbindService(myConn);
         unregisterReceiver(myBr);
-        mBluetoothAdapter.stopLeScan(mLeScanCallback);
-        mBtService = null;
     }
-
 
     public class BlueDevice {
         public BluetoothDevice device;

@@ -5,5 +5,7 @@
     <string name="blueTooth_ressi">信号：</string>
     <string name="showMore">显示更多</string>
     <string name="packUp">收起</string>
+    <string name="passWord">密码</string>
+    <string name="passWord_Pattern">密码模式</string>
 
 </resources>
